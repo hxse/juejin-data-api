@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import pandas as pd
@@ -7,10 +7,14 @@ import time
 from pathlib import Path
 import uvicorn
 import json
+import base64
+from PIL import Image
+from combin_image import combin_image
+from request_image import request_image
 
-with open('./config.json', 'r', encoding='utf-8') as file:
-    data= json.load(file)
-    set_token(data['token'])
+with open("./config.json", "r", encoding="utf-8") as file:
+    data = json.load(file)
+    set_token(data["token"])
 
 
 def get_data(name, frequency, count) -> pd.DataFrame:
@@ -111,6 +115,29 @@ def read_item(name: str, frequency: str, count: int):
     df = [[i, df.loc[i].to_list()[1:5], df.loc[i].to_list()[5:]] for i in df.index]
     print(df[0], [type(i) for i in df[0][1]])
     return JSONResponse(content=df)
+
+
+@app.post("/store")
+async def getInformation(info: Request):
+    data = await info.json()
+    print(data["id"], len(data["dataUrl"].split(",")[1]))
+    with open(f"./image/{data['id']}.png", "wb") as f:
+        f.write(base64.b64decode(data["dataUrl"].split(",")[1]))
+
+    storeIdx = data["id"].split("_")[1]
+    targetPath = Path("./image") / f"all_{storeIdx}.png"
+    imageArr = [
+        i for i in Path("./image").glob(f"*_{storeIdx }.png") if i.name != targetPath.name
+    ]
+
+    if data['config']["screenNum"] == len(imageArr):
+        targetPath.unlink(missing_ok=True)
+        combin_image(imageArr, targetPath)
+        for i in imageArr:
+            i.unlink()
+        request_image(targetPath,{"name":data['config']['name']})
+        # targetPath.unlink()
+    return JSONResponse(content=data)
 
 
 if __name__ == "__main__":
