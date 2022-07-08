@@ -1,2 +1,2 @@
-python main.py
+pdm run python main.py
 pause
