@@ -3,6 +3,7 @@
 
 import json
 import requests
+import os
 
 
 # def request_image(data):
@@ -18,21 +19,34 @@ import requests
 #     )
 #     print(res.text)
 
-def request_image(path,data):
+
+def request_image(path, data):
     import telegram
-    token="1400160390:AAHRdclS5Vzhpyvx__WRNjabXNl3htqrmmI"
-    chat_id="761398123"
+
+    chat_id = -1001570498936
+    token = os.getenv("yb_chan_bot")
     pp = telegram.utils.request.Request(proxy_url="https://127.0.0.1:7890")
-    bot = telegram.Bot(
-        token=token,
-        request=pp
-    )
+    bot = telegram.Bot(token=token, request=pp)
     # bot.send_message(chat_id=chat_id, text="???")
-    with open(path,'rb')as f:
-        text='\n'.join([f'*{i}:*  {data[i]}' for i in data])
-        bot.send_photo(chat_id, f,caption=text,parse_mode="Markdown")
+    with open(path, "rb") as f:
+        text = "\n".join([f"*{i}:*  {data[i]}" for i in data])
+        bot.send_photo(chat_id, f, caption=text, parse_mode="Markdown")
+
+
+def request_text(data):
+    import telegram
+
+    chat_id = -1001570498936
+    token = os.getenv("yb_chan_bot")
+    print(token)
+    pp = telegram.utils.request.Request(proxy_url="https://127.0.0.1:7890")
+    bot = telegram.Bot(token=token, request=pp)
+    bot.send_message(chat_id=chat_id, text=data)
+    # with open(path, "rb") as f:
+    #     text = "\n".join([f"*{i}:*  {data[i]}" for i in data])
+    #     bot.send_photo(chat_id, f, caption=text, parse_mode="Markdown")
 
 
 if __name__ == "__main__":
     # test为true直接返回post值不请求tgbot
-    request_image({"name":"rb","count":3000})
+    request_text("hello world")
