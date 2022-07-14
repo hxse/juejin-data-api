@@ -127,15 +127,20 @@ async def getInformation(info: Request):
     storeIdx = data["id"].split("_")[1]
     targetPath = Path("./image") / f"all_{storeIdx}.png"
     imageArr = [
-        i for i in Path("./image").glob(f"*_{storeIdx }.png") if i.name != targetPath.name
+        i
+        for i in Path("./image").glob(f"*_{storeIdx }.png")
+        if i.name != targetPath.name
     ]
 
-    if data['config']["screenNum"] == len(imageArr):
+    if data["config"]["screenNum"] == len(imageArr):
         targetPath.unlink(missing_ok=True)
         combin_image(imageArr, targetPath)
         for i in imageArr:
             i.unlink()
-        request_image(targetPath,{"name":data['config']['name']})
+        request_image(
+            targetPath,
+            {field: data["config"][field] for field in data["config"]["sendField"]},
+        )
         # targetPath.unlink()
     return JSONResponse(content=data)
 
