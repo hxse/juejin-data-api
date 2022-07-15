@@ -137,11 +137,9 @@ async def getInformation(info: Request):
         combin_image(imageArr, targetPath)
         for i in imageArr:
             i.unlink()
-        request_image(
-            targetPath,
-            {field: data["config"][field] for field in data["config"]["sendField"]},
-        )
-        # targetPath.unlink()
+        obj = {field: data["config"][field] for field in data["config"]["sendField"]}
+        obj = {**obj, **data["postArgs"]}
+        request_image(targetPath, obj)
     return JSONResponse(content=data)
 
 
