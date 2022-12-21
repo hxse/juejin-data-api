@@ -28,9 +28,17 @@ def request_image(path, data):
     pp = telegram.utils.request.Request(proxy_url="https://127.0.0.1:7890")
     bot = telegram.Bot(token=token, request=pp)
     # bot.send_message(chat_id=chat_id, text="???")
-    with open(path, "rb") as f:
-        text = "\n".join([f"*{i}:*  {data[i]}" for i in data])
-        bot.send_photo(chat_id, f, caption=text, parse_mode="Markdown")
+    text = "\n".join([f"*{i}:*  {data[i]}" for i in data])
+    if path:
+        with open(path, "rb") as f:
+            bot.send_photo(
+                chat_id,
+                f,
+                caption=text,
+                parse_mode="Markdown",
+            )
+    else:
+        bot.send_message(chat_id, text, parse_mode="Markdown")
 
 
 def request_text(data):

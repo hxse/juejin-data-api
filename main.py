@@ -117,6 +117,15 @@ def read_item(name: str, frequency: str, count: int):
     return JSONResponse(content=df)
 
 
+@app.post("/send")
+async def send(req: Request):
+    data = await req.json()
+    targetPath = Path("./image") / f"2k.png"
+    targetPath = ""
+    request_image(targetPath, data)
+    return JSONResponse(content=data)
+
+
 @app.post("/store")
 async def getInformation(info: Request):
     data = await info.json()
