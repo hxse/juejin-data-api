@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import pandas as pd
@@ -69,6 +69,8 @@ def process_data(name, frequency, count, refresh):
     print("start:", start)
     if refresh or (not path.exists()):
         df = get_data(name, frequency, count)
+        if df.empty == True:
+            raise ValueError("空数据, 请检查网络连接")
         df["bob"] = df["bob"].apply(lambda x: x.timestamp())
         write_csv(path, df)
     else:
@@ -88,7 +90,10 @@ def item(
     splitStart: int = 0,
     splitEnd: int = 0,
 ):
-    data = process_data(name, frequency, count, refresh)
+    try:
+        data = process_data(name, frequency, count, refresh)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail="data not found")
     if not testUpdate:
         return JSONResponse(content=data)
     else:
