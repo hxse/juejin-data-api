@@ -8,7 +8,6 @@ from pathlib import Path
 import uvicorn
 import json
 import base64
-from PIL import Image
 from combin_image import combin_image
 from request_image import request_image
 
@@ -17,11 +16,12 @@ with open("./config.json", "r", encoding="utf-8") as file:
     set_token(data["token"])
 
 
-def get_data(name, frequency, count) -> pd.DataFrame:
+def get_data(name, frequency, count, end_time=None) -> pd.DataFrame:
     df = history_n(
         symbol=name,  # "SHFE.rb2010"
         frequency=frequency,
         count=count,
+        end_time=end_time,
         fields="bob,open,high,low,close,volume",
         df=True,
     )
@@ -63,12 +63,12 @@ def read_root():
     return {"Hello": "World"}
 
 
-def process_data(name, frequency, count, refresh):
+def process_data(name, frequency, count, refresh, end_time=None):
     path = Path(f"./history_data/{name}-{frequency}-{count}.csv")
     start = time.time()
     print("start:", start)
     if refresh or (not path.exists()):
-        df = get_data(name, frequency, count)
+        df = get_data(name, frequency, count, end_time=end_time)
         if df.empty == True:
             raise ValueError("空数据, 请检查网络连接")
         df["bob"] = df["bob"].apply(lambda x: x.timestamp())
@@ -89,9 +89,10 @@ def item(
     testUpdate: bool = False,
     splitStart: int = 0,
     splitEnd: int = 0,
+    end_time=None,
 ):
     try:
-        data = process_data(name, frequency, count, refresh)
+        data = process_data(name, frequency, count, refresh, end_time=end_time)
     except ValueError as e:
         raise HTTPException(status_code=404, detail="data not found")
     if not testUpdate:
